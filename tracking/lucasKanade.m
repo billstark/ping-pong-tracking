@@ -34,14 +34,17 @@ for i = 1:size(oldPyramid, 2)
         
             intD = round(d);
             % check here if bugs
-            JRow = IRow + intD(j, 1);
-            JCol = ICol + intD(j, 0);
-
+            JRow = IRow + intD(j, 2);
+            JCol = ICol + intD(j, 1);
+            
+            if IRow - halfKSize < 1 || ICol - halfKSize < 1 || IRow + halfKSize > size(I, 1) || ICol + halfKSize > size(I, 2)
+                break;
+            end
             gt = I(IRow - halfKSize:IRow + halfKSize, ICol - halfKSize:ICol + halfKSize) - J(JRow - halfKSize:JRow + halfKSize, JCol - halfKSize:JCol + halfKSize);
-            gtgxFull = gt .* gx;
-            gtgx = sum(sum(gtgxFull(IRow - halfKSize:IRow + halfKSize, ICol - halfKSize:ICol + halfKSize)));
-            gtgyFull = gt .* gy;
-            gtgy = sum(sum(gtgyFull(IRow - halfKSize:IRow + halfKSize, ICol - halfKSize:ICol + halfKSize)));
+            gtgxFull = gt .* gx(IRow - halfKSize:IRow + halfKSize, ICol - halfKSize:ICol + halfKSize);
+            gtgx = sum(sum(gtgxFull));
+            gtgyFull = gt .* gy(IRow - halfKSize:IRow + halfKSize, ICol - halfKSize:ICol + halfKSize);
+            gtgy = sum(sum(gtgyFull));
             gxgx = sum(sum(Ixx(IRow - halfKSize:IRow + halfKSize, ICol - halfKSize:ICol + halfKSize)));
             gxgy = sum(sum(Ixy(IRow - halfKSize:IRow + halfKSize, ICol - halfKSize:ICol + halfKSize)));
             gygy = sum(sum(Iyy(IRow - halfKSize:IRow + halfKSize, ICol - halfKSize:ICol + halfKSize)));
