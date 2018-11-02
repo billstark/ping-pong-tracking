@@ -28,7 +28,7 @@ function detectedMatrix = findMatrix(img, Ix, Iy, kernelSize)
 Ixx = Ix .* Ix;
 Iyy = Iy .* Iy;
 Ixy = Ix .* Iy;
-halfKSize = floor(kernelSize);
+halfKSize = floor(kernelSize / 2);
 nRow = floor(size(img, 1) / (halfKSize + 1)) - 1;
 nCol = floor(size(img, 2) / (halfKSize + 1)) - 1;
 detectedMatrix = zeros(nRow, nCol, 2, 2, 'double');
@@ -63,7 +63,6 @@ function accepted = findSample(detectedMatrix, numOfCorners, kernelSize)
     end
     reshapedEig = reshape(eigs, [], 1);
     sorted = sort(reshapedEig, 'descend');
-%     disp(sorted(1:numOfCorners));
     for i = 1:numOfCorners
         selectedEig = sorted(i);
         [row, col] = find(eigs==selectedEig);
