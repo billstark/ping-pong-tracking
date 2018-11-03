@@ -29,5 +29,5 @@ function plot_camera_videos(prefix, crop)
     end
 
     imshow(pic_plot);
-    print(strcat('out/', prefix, '.jpg'), '-djpeg');
+    print(strcat('ping-pong-tracking/data/', prefix, '.jpg'), '-djpeg');
 end
