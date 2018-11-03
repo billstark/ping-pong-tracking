@@ -31,16 +31,6 @@ function detectedPoints = detectPoints(vname, averaged, crop)
         % eroded = bwmorph(dilated, 'shrink', Inf);
         % [pos_r, pos_c] = find(eroded==1);
 
-        imshow(firstFrame + averaged);
-        hold on;
-        for i = 1:size([r; c]', 1)
-            x = r(i);
-            y = c(i);
-            rectangle('Position', [x - 6, y - 6, 13, 13], 'EdgeColor', 'r', 'LineWidth', 1)
-        end
-        print(strcat('out/f', num2str(n), '.jpg'), '-djpeg');
-
-
         framePoints = [r' + crop(1), c' + crop(2)];
         detectedPoints = [detectedPoints; framePoints];
 

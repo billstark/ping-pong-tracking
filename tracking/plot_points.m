@@ -24,7 +24,7 @@ function plot_camera_videos(prefix, crop)
         end
 
         detectedPoints = detectPoints(vname, uint8(averaged), crop);
-        ind = sub2ind(size(pic_plot), detectedPoints(:,1), detectedPoints(:,2));
+        ind = sub2ind(size(pic_plot), detectedPoints(:,2), detectedPoints(:,1));
         pic_plot(ind) = 255;
     end
 
