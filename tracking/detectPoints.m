@@ -38,7 +38,7 @@ function detectedPoints = detectPoints(vname, averaged, crop)
         file_arr = strsplit(folder_arr{2}, '.');
 
         filename = file_arr{1};
-        writePoints(framePoints, filename, n);
+        writePoints(framePoints, 'detected_points', filename, n);
 
         firstFrame = secondFrame + averaged;
         secondFrame = imcrop(readFrame(v), crop);

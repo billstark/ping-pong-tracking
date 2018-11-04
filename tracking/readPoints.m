@@ -3,4 +3,5 @@ function points = readPoints(fname)
     sizeA = [2 Inf];
     A = fscanf(fid, '%g\t', sizeA);
     points = A';
+    fclose(fid);
 end
