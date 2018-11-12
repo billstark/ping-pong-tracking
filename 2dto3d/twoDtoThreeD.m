@@ -42,24 +42,26 @@ i3 = R3(1,:);
 j3 = R3(2,:);
 k3 = R3(3,:);
 
+NUM_CAMERAS = 3;
+NUM_SCENES = 10;
+
 % Read data from csv
-sceneNum = 10; % total number of video scenes
 Filelist = readtable("FileList.csv", 'ReadVariableNames', false);
 
-% ======================================================
-% TODO: 
-% ======================================================
-addpath('C:\Users\Ruolan\Documents\MATLAB\Annotation');
-
-for scene = 3:3 % replaced by starsceneNum later
+for scene = 1 : NUM_SCENES
+    disp(strcat('processing scene', num2str(scene)));
+    
     % find start and end of the frames
+    
     startframe = 0;
-    endframe = 300; 
-    for cam = 1:3
+    endframe = 300;
+    
+    for cam = 1 : NUM_CAMERAS
         fname = Filelist{scene, cam}{1};
         baseName = fname(1:find(fname=='.')-1);
-        annotaionFile = strcat(baseName, '.csv');
-        T = readtable(annotaionFile);
+        annotationFile = strcat(baseName, '.csv');
+        annotationFile = strcat('Annotation/', annotationFile);
+        T = readtable(annotationFile);
         totalrows = height(T);
         
         % count largest start frame
@@ -77,63 +79,119 @@ for scene = 3:3 % replaced by starsceneNum later
         for r = startframe + 1 : totalrows 
             if isnan(T.x(r))
                 frame = T.frame(r);
-                if frame < endframe
-                    endframe= frame - 1; 
+                if frame - 1 < endframe
+                    endframe= frame - 1;
                 end
                 break;
             end
         end
     end
-    % Total number of frames: F
-    F = endframe - startframe + 1;
-    % Total number of 3D points: N
-    N = 3;
     
-    % form the 2F*N matrix w
+    F = NUM_CAMERAS;
+    N = endframe - startframe + 1;
     w = zeros(2*F, N);
     
-    % read all frames 
-    for cam = 1:3
+    % For each frame in the video, construcut the w matrix (2F * N) from 3
+    % camera views
+    
+    for cam = 1 : NUM_CAMERAS
+        
         fname = Filelist{scene, cam}{1};
         baseName = fname(1:find(fname=='.')-1);
-        annotaionFile = strcat(baseName, '.csv');
-        T = readtable(annotaionFile);
-        for r = startframe + 1 : endframe + 1
-            % problem: undistort_y data type is array
-            x = T.undistort_x(r);
-            y_a = T.undistort_y(r);
-            if iscell(y_a)
-                y = str2double(y_a{1});
-            else
-                y = y_a;
+        annotationFile = strcat(baseName, '.csv');
+        T = readtable(annotationFile);
+        
+        
+        for curFrame = startframe : endframe
+            undistortX = T.undistort_x(curFrame + 1);
+            undistortY = T.undistort_y(curFrame + 1);
+            
+            if iscell(undistortY)
+                undistortY = str2double(undistortY{1});
             end
-            % store the 2d coords into matrx w [DONE]
-            w(T.frame(r)- startframe + 1, cam) = x;
-            w(F + T.frame(r)- startframe + 1, cam) = y;   
-        end    
+            
+            w(cam, curFrame - startframe + 1) = undistortX;
+            w(cam + NUM_CAMERAS, curFrame - startframe + 1) = undistortY;
+        end
+        
     end
     
     % take the average horizontally
     w_avg = mean(w,2);
-    w_subavg = zeros(2*F,N);
-    for r = 1:2*F
-        w_subavg(r,:) = w(r,:) - w_avg(r,1); 
+    for r = 1 : 2*F
+        w(r,:) = w(r,:) - w_avg(r,1);
     end
     
     % using SVD:
-    [Uw, Sw, Vw] = svd(w_subavg);
-    S_p = Sw(1:3,1:3); % S' is 3x3 sub-matrix of S
+    [Uw, Sw, Vw] = svd(w);
+    S_p = Sw(1:3,1:3); % S is 3x3 sub-matrix of S
     U_p = Uw(:,1:3); % the first three columns of U 
     V_p = Vw(:,1:3); % the first three columns of V
     
-    M = U_p * sqrtm(S_p);
-    S = sqrtm(S_p) * transpose(V_p);
+    M_hat = U_p * sqrtm(S_p);
+    S_hat = sqrtm(S_p) * transpose(V_p);
+    
     
     % find a matrix A (3X3) that will give a geometrically correct (i.e.
     % Euclidean) solution
     
+    If = M_hat(1 : F, :);
+    Jf = M_hat(F + 1 : end, :);
     
+    linearFunc = @(a, b)[a(1)*b(1), a(1)*b(2)+a(2)*b(1), a(1)*b(3)+a(3)*b(1), ...
+              a(2)*b(2), a(2)*b(3)+a(3)*b(2), a(3)*b(3)];
+    G = zeros(3 * F, 6);
     
+    for f = 1 : 3 * F
+        if f <= F
+            G(f, :) = linearFunc(If(f, :), If(f, :));
+        elseif f <= 2 * F
+            curIdx = f - F;
+            G(f, :) = linearFunc(Jf(curIdx, :), Jf(curIdx, :));
+        else
+            curIdx = f - 2 * F;
+            G(f, :) = linearFunc(If(curIdx, :), Jf(curIdx,:));
+        end
+    end
+    
+    % solve Q for GQ = c
+    c = [ones(2 * F, 1); zeros(F, 1)];
+    Q = linsolve(G, c);
+    Q = [Q(1) Q(2) Q(3);...
+         Q(2) Q(4) Q(5);...
+         Q(3) Q(5) Q(6)];
+    
+    % solve A for Q = AA^T
+    [U, S, V] = svd(Q);
+    x = sqrtm(S);
+    A = U * x;
+    
+    num_frame = endframe - startframe + 1;
+    frame_num = [startframe : endframe]';
+    x = zeros(num_frame, 1);
+    y = zeros(num_frame, 1);
+    z = zeros(num_frame, 1);
+    
+    for curFrame = startframe : endframe
+        curIdx = curFrame - startframe + 1;
+        point = A \ S_hat(:, curIdx);
+        x(curIdx) = point(1);
+        y(curIdx) = point(2);
+        z(curIdx) = point(3);
+    end
+    
+    T = table(frame_num, x, y, z);
+    
+    folderName = 'Results';
+    
+    if ~exist(folderName, 'dir')
+        mkdir(folderName);
+    end
+    
+    resultName = strcat(folderName, '/scene', num2str(scene), '.csv');
+    f = fopen(resultName, 'w');
+    fclose(f);
+    writetable(T, resultName);
 end 
 
 
