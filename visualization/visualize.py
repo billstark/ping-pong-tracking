@@ -24,7 +24,7 @@ class Arrow3D(FancyArrowPatch):
 
 
 def read_p_lst(file_name):
-    points = [[float(y.strip()) for y in x.split(',')] for x in open(file_name, 'r').read().split('\n')]
+    points = [[float(y.strip()) for y in x.split(',')] for x in open(file_name, 'r').read().strip().split('\n')]
     return points
 
 
@@ -38,7 +38,7 @@ def plot(p_lst):
     ax.set_ylim([min(y), max(y)])
     ax.set_zlim([min(z), max(z)])
     for i in range(len(x)-1):
-        a = Arrow3D([x[i], x[i+1]],[y[i], y[i+1]],[z[i], z[i+1]], mutation_scale=20, arrowstyle="-|>", color="r")
+        a = Arrow3D([x[i], x[i+1]],[y[i], y[i+1]],[z[i], z[i+1]], mutation_scale=5, arrowstyle="->", color="r")
         ax.add_artist(a)
 
     plt.show()
