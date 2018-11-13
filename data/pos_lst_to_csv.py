@@ -13,7 +13,7 @@ for pos in pos_list:
 for key in pos_dict:
     lst = pos_dict[key]
     fr_n = max(lst, key=lambda x: x[0])[0] + 1
-    pos_arr = [[0, 0]] * fr_n
+    pos_arr = [[None, None]] * fr_n
     for item in lst:
         pos_arr[item[0]] = item[1:]
 
@@ -22,6 +22,6 @@ for key in pos_dict:
         writer.writerow(['frame', 'x', 'y'])
     
         for fr, pos in enumerate(pos_arr):
-            writer.writerow([fr, pos[0], pos[1]])
+            writer.writerow([fr, pos[0] or '', pos[1] or ''])
 
 
