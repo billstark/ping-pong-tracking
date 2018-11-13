@@ -99,6 +99,7 @@ for scene = 1 : NUM_SCENES
         fname = Filelist{scene, cam}{1};
         baseName = fname(1:find(fname=='.')-1);
         annotationFile = strcat(baseName, '.csv');
+        annotationFile = strcat('Annotation/', annotationFile);
         T = readtable(annotationFile);
         
         
@@ -130,7 +131,7 @@ for scene = 1 : NUM_SCENES
     
     M_hat = U_p * sqrtm(S_p);
     S_hat = sqrtm(S_p) * transpose(V_p);
-    
+   
     
     % find a matrix A (3X3) that will give a geometrically correct (i.e.
     % Euclidean) solution
@@ -167,7 +168,7 @@ for scene = 1 : NUM_SCENES
     A = U * x;
     
     num_frame = endframe - startframe + 1;
-    frame_num = [startframe : endframe]';
+    frame_num = [startframe : endframe];
     x = zeros(num_frame, 1);
     y = zeros(num_frame, 1);
     z = zeros(num_frame, 1);
@@ -180,7 +181,7 @@ for scene = 1 : NUM_SCENES
         z(curIdx) = point(3);
     end
     
-    T = table(frame_num, x, y, z);
+    T = table(x, y, z);
     
     folderName = 'Results';
     
@@ -191,7 +192,7 @@ for scene = 1 : NUM_SCENES
     resultName = strcat(folderName, '/scene', num2str(scene), '.csv');
     f = fopen(resultName, 'w');
     fclose(f);
-    writetable(T, resultName);
+    writetable(T, resultName,'WriteVariableNames',false,'WriteRowNames',false);
 end 
 
 
