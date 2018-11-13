@@ -28,3 +28,8 @@ def distort_xy(u, v, cam_num):
     up = xp*fx + cx
     vp = yp*fy + cy
     return up, vp
+
+
+
+print(distort_xy(555,314,0))
+print(526.492588,301.481624)
