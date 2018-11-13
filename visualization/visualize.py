@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
+import math
 
 import argparse
 
@@ -21,6 +22,37 @@ class Arrow3D(FancyArrowPatch):
         FancyArrowPatch.draw(self, renderer)
 
 
+def read_camera_data():
+    file_name = '2dto3d/Results/cameraPos.csv'
+    pos_data = [[float(y) for y in x.split(',')] for x in open(file_name, 'r').read().strip().split('\n')]
+    cam_count = len(pos_data[0])
+    cam_data_lst = []
+    for i in range(cam_count):
+        cam_data = {}
+        cam_data['pos'] = [pos_data[0][i], pos_data[1][i], pos_data[2][i]]
+        cam_data['R'] = [[pos_data[3][i], pos_data[4][i], pos_data[5][i]],
+                         [pos_data[6][i], pos_data[7][i], pos_data[8][i]],
+                         [pos_data[9][i], pos_data[10][i], pos_data[11][i]]]
+        cam_data_lst.append(cam_data)
+    return cam_data_lst
+
+
+def R_to_euler_angles(R):
+    R = np.array(R)
+    sy = math.sqrt(R[0,0] * R[0,0] +  R[1,0] * R[1,0])
+     
+    singular = sy < 1e-6
+ 
+    if  not singular :
+        x = math.atan2(R[2,1] , R[2,2])
+        y = math.atan2(-R[2,0], sy)
+        z = math.atan2(R[1,0], R[0,0])
+    else :
+        x = math.atan2(-R[1,2], R[1,1])
+        y = math.atan2(-R[2,0], sy)
+        z = 0
+ 
+    return [x, y, z]
 
 
 def read_p_lst(file_name):
@@ -41,6 +73,17 @@ def plot(p_lst):
         a = Arrow3D([x[i], x[i+1]],[y[i], y[i+1]],[z[i], z[i+1]], mutation_scale=5, arrowstyle="->", color="r")
         ax.add_artist(a)
 
+    
+    # Plot camera data
+    cam_data = read_camera_data()
+    for cam in cam_data:
+        cam_pos = cam['pos']
+        R = cam['R']
+        rx, ry, rz = R_to_euler_angles(R)
+        
+
+
+
     plt.show()
 
 
@@ -50,9 +93,6 @@ if __name__ == "__main__":
         type=str)
     args = parser.parse_args()
     filename = args.filename
-    try:
-        points = read_p_lst(filename)
-        plot(points)
-    except Exception:
-        print("Invalid format of point data file {}".format(filename))
+    points = read_p_lst(filename)
+    plot(points)
 
