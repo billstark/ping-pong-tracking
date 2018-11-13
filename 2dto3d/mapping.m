@@ -111,6 +111,7 @@ for scene = 1 : 10
     y = zeros(num_frame, 1);
     z = zeros(num_frame, 1);
     
+    % read undistorted x, y and computed 3D trajectory
     for curFrame = startframe : endframe
         
         A = zeros(6, 3);
@@ -167,7 +168,56 @@ for scene = 1 : 10
     file = fopen(resultName, 'w');
     fclose(file);
     writetable(T, resultName, 'WriteVariableNames', false, 'WriteRowNames', false);
+    
+    % read distorted x, y and computed 3D trajectory
+    for curFrame = startframe : endframe
+        
+        A = zeros(6, 3);
+        c = zeros(6, 1);
+
+        for cam = 1: NUM_CAMERAS
+            fname = Filelist{scene, cam}{1};
+            baseName = fname(1:find(fname=='.')-1);
+            annotationFile = strcat(baseName, '.csv');
+            annotationFile = strcat('Annotation/', annotationFile);
+            T = readtable(annotationFile);
+            
+            distortX = T.x(curFrame + 1);
+            distortY = T.y(curFrame + 1);
+            
+            if iscell(distortY)
+                distortY = str2double(distortY{1});
+            end
+            
+            tempX = ((distortX - u_0(cam)) / (f(cam) * scaleX));
+            tempY = ((distortY - v_0(cam)) / (f(cam) * scaleY));
+            A(cam * 2 - 1, :) = tempX * k_f(cam, :) - i_f(cam, :);
+            A(cam * 2, :) = tempY * k_f(cam, :) - j_f(cam, :);
+            c(cam * 2 - 1) = tempX * t_f(cam, :) * k_f(cam, :)' - t_f(cam, :) * i_f(cam, :)';
+            c(cam * 2) = tempY * t_f(cam, :) * k_f(cam, :)' - t_f(cam, :) * j_f(cam, :)';
+        end
+        
+        scenePoint = linsolve(A, c);
+        curIdx = curFrame - startframe + 1;
+        x(curIdx) = scenePoint(1);
+        y(curIdx) = scenePoint(2);
+        z(curIdx) = scenePoint(3);
+    end
+    
+    T2 = table(x, y, z);
+    
+    folderName = 'distortedResults';
+    
+    if ~exist(folderName, 'dir')
+        mkdir(folderName);
+    end
+    
+    resultName = strcat(folderName, '/scene', num2str(scene), '.csv');
+    file = fopen(resultName, 'w');
+    fclose(file);
+    writetable(T2, resultName, 'WriteVariableNames', false, 'WriteRowNames', false);
 end
+
     
 cam1 = zeros(12, 1);
 cam2 = zeros(12, 1);
