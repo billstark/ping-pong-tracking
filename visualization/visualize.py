@@ -63,19 +63,17 @@ def plot(p_lst):
         cam_pos_lst.append(cam_pos)
         R = cam['R']
         scale = 0.4
+
         I = [row[0]*scale for row in R]
         J = [row[1]*scale for row in R]
         K = [row[2]*scale for row in R]
-        center_vec = [I[0]+J[0]+K[0], I[1]+J[1]+K[1], I[2]+J[2]+K[2]]
         
-        I_arrow = Arrow3D([cam_pos[0], cam_pos[0] + I[0]],[cam_pos[1], cam_pos[1] + I[1]],[cam_pos[2], cam_pos[2] + I[2]], mutation_scale=5, arrowstyle="->", color="b")
+        I_arrow = Arrow3D([cam_pos[0], cam_pos[0] + I[0]],[cam_pos[1], cam_pos[1] + I[1]],[cam_pos[2], cam_pos[2] + I[2]], mutation_scale=5, arrowstyle="->", color="r")
         ax.add_artist(I_arrow)
-        J_arrow = Arrow3D([cam_pos[0], cam_pos[0] + J[0]],[cam_pos[1], cam_pos[1] + J[1]],[cam_pos[2], cam_pos[2] + J[2]], mutation_scale=5, arrowstyle="->", color="b")
+        J_arrow = Arrow3D([cam_pos[0], cam_pos[0] + J[0]],[cam_pos[1], cam_pos[1] + J[1]],[cam_pos[2], cam_pos[2] + J[2]], mutation_scale=5, arrowstyle="->", color="g")
         ax.add_artist(J_arrow)
         K_arrow = Arrow3D([cam_pos[0], cam_pos[0] + K[0]],[cam_pos[1], cam_pos[1] + K[1]],[cam_pos[2], cam_pos[2] + K[2]], mutation_scale=5, arrowstyle="->", color="b")
         ax.add_artist(K_arrow)
-        center_arrow = Arrow3D([cam_pos[0], cam_pos[0] + center_vec[0]],[cam_pos[1], cam_pos[1] + center_vec[1]],[cam_pos[2], cam_pos[2] + center_vec[2]], mutation_scale=5, arrowstyle="->", color="g")
-        ax.add_artist(center_arrow)
 
     cam_pos_x = [x[0] for x in cam_pos_lst]
     cam_pos_y = [x[1] for x in cam_pos_lst]
