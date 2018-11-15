@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
 import math
+import json
 
 import argparse
 
@@ -23,18 +24,9 @@ class Arrow3D(FancyArrowPatch):
 
 
 def read_camera_data():
-    file_name = '2dto3d/Results/cameraPos.csv'
-    pos_data = [[float(y) for y in x.split(',')] for x in open(file_name, 'r').read().strip().split('\n')]
-    cam_count = len(pos_data[0])
-    cam_data_lst = []
-    for i in range(cam_count):
-        cam_data = {}
-        cam_data['pos'] = [pos_data[0][i], pos_data[1][i], pos_data[2][i]]
-        cam_data['R'] = [[pos_data[3][i], pos_data[4][i], pos_data[5][i]],
-                         [pos_data[6][i], pos_data[7][i], pos_data[8][i]],
-                         [pos_data[9][i], pos_data[10][i], pos_data[11][i]]]
-        cam_data_lst.append(cam_data)
-    return cam_data_lst
+    file_name = '2dto3d/Results/cameraSpecs.json'
+    cam_data = json.loads(open(file_name).read())
+    return cam_data
 
 
 def read_p_lst(file_name):
@@ -58,21 +50,19 @@ def plot(p_lst):
 
     cam_pos_lst = []
 
-    for cam in cam_data:
-        cam_pos = cam['pos']
+    for cam in cam_data['list']:
+        cam_pos = cam_data['camera_pos'][cam]
         cam_pos_lst.append(cam_pos)
-        R = cam['R']
-        scale = 0.4
 
-        I = [row[0]*scale for row in R]
-        J = [row[1]*scale for row in R]
-        K = [row[2]*scale for row in R]
+        plus_I = cam_data['camera_pos_plus_vec'][cam]['plus_i']
+        plus_J = cam_data['camera_pos_plus_vec'][cam]['plus_j']
+        plus_K = cam_data['camera_pos_plus_vec'][cam]['plus_k']
         
-        I_arrow = Arrow3D([cam_pos[0], cam_pos[0] + I[0]],[cam_pos[1], cam_pos[1] + I[1]],[cam_pos[2], cam_pos[2] + I[2]], mutation_scale=5, arrowstyle="->", color="r")
+        I_arrow = Arrow3D([cam_pos[0], plus_I[0]],[cam_pos[1], plus_I[1]],[cam_pos[2], plus_I[2]], mutation_scale=5, arrowstyle="->", color="r")
         ax.add_artist(I_arrow)
-        J_arrow = Arrow3D([cam_pos[0], cam_pos[0] + J[0]],[cam_pos[1], cam_pos[1] + J[1]],[cam_pos[2], cam_pos[2] + J[2]], mutation_scale=5, arrowstyle="->", color="g")
+        J_arrow = Arrow3D([cam_pos[0], plus_J[0]],[cam_pos[1], plus_J[1]],[cam_pos[2], plus_J[2]], mutation_scale=5, arrowstyle="->", color="g")
         ax.add_artist(J_arrow)
-        K_arrow = Arrow3D([cam_pos[0], cam_pos[0] + K[0]],[cam_pos[1], cam_pos[1] + K[1]],[cam_pos[2], cam_pos[2] + K[2]], mutation_scale=5, arrowstyle="->", color="b")
+        K_arrow = Arrow3D([cam_pos[0], plus_K[0]],[cam_pos[1], plus_K[1]],[cam_pos[2], plus_K[2]], mutation_scale=5, arrowstyle="->", color="b")
         ax.add_artist(K_arrow)
 
     cam_pos_x = [x[0] for x in cam_pos_lst]
