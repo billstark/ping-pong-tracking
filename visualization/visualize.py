@@ -37,11 +37,11 @@ def read_p_lst(file_name):
 def plot(p_lst):
     x, y, z = zip(*p_lst)
 
-    mpl.rcParams['legend.fontsize'] = 10
     fig = plt.figure()
     ax = fig.gca(projection='3d')
+    
     for i in range(len(x)-1):
-        a = Arrow3D([x[i], x[i+1]],[y[i], y[i+1]],[z[i], z[i+1]], mutation_scale=5, arrowstyle="->", color="r")
+        a = Arrow3D([x[i], x[i+1]],[y[i], y[i+1]],[z[i], z[i+1]], mutation_scale=5, arrowstyle="-|>", color="r")
         ax.add_artist(a)
 
     
@@ -58,11 +58,11 @@ def plot(p_lst):
         plus_J = cam_data['camera_pos_plus_vec'][cam]['plus_j']
         plus_K = cam_data['camera_pos_plus_vec'][cam]['plus_k']
         
-        I_arrow = Arrow3D([cam_pos[0], plus_I[0]],[cam_pos[1], plus_I[1]],[cam_pos[2], plus_I[2]], mutation_scale=5, arrowstyle="->", color="r")
+        I_arrow = Arrow3D([cam_pos[0], plus_I[0]],[cam_pos[1], plus_I[1]],[cam_pos[2], plus_I[2]], mutation_scale=15, arrowstyle="-|>", color="r")
         ax.add_artist(I_arrow)
-        J_arrow = Arrow3D([cam_pos[0], plus_J[0]],[cam_pos[1], plus_J[1]],[cam_pos[2], plus_J[2]], mutation_scale=5, arrowstyle="->", color="g")
+        J_arrow = Arrow3D([cam_pos[0], plus_J[0]],[cam_pos[1], plus_J[1]],[cam_pos[2], plus_J[2]], mutation_scale=15, arrowstyle="-|>", color="g")
         ax.add_artist(J_arrow)
-        K_arrow = Arrow3D([cam_pos[0], plus_K[0]],[cam_pos[1], plus_K[1]],[cam_pos[2], plus_K[2]], mutation_scale=5, arrowstyle="->", color="b")
+        K_arrow = Arrow3D([cam_pos[0], plus_K[0]],[cam_pos[1], plus_K[1]],[cam_pos[2], plus_K[2]], mutation_scale=15, arrowstyle="-|>", color="b")
         ax.add_artist(K_arrow)
 
     cam_pos_x = [x[0] for x in cam_pos_lst]
@@ -79,17 +79,17 @@ def plot(p_lst):
     max_y = max(y_lst)
     min_z = min(z_lst)
     max_z = max(z_lst)
+    mid_x = (min_x + max_x) / 2
+    mid_y = (min_y + max_y) / 2
+    mid_z = (min_z + max_z) / 2
 
     span = max([max_x-min_x, max_y-min_y, max_z-min_z])
 
-    ax.set_xlim([min_x, min_x+span])
-    ax.set_ylim([min_y, min_y+span])
-    ax.set_zlim([min_z, min_z+span])
+    ax.set_xlim([mid_x-0.5*span, mid_x+0.5*span])
+    ax.set_ylim([mid_y-0.5*span, mid_y+0.5*span])
+    ax.set_zlim([mid_z-0.5*span, mid_z+0.5*span])
 
-        
-
-
-
+    
     plt.show()
 
 
