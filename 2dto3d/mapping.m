@@ -1,5 +1,12 @@
 % ===============================================================
-% Compute the 3D trajectory of the table tennis balls
+% Software to compute the 3D trajectory of the table tennis balls
+% 
+% Input: it reads a 'FileList.csv' and annotated 2D data csv files 
+% from folder 'Annotation' in the same directory.
+% 
+% Output: it outputs two folders with 3D trajectory results, one 
+% with undistorted results in folder 'Results', and one with 
+% distorted results in folder 'distortedResults'
 % ===============================================================
 
 % Extrinsic parameters (i.e. R and t) for each of the 3 cameras

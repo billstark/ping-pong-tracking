@@ -24,7 +24,7 @@ class Arrow3D(FancyArrowPatch):
 
 
 def read_camera_data():
-    file_name = '2dto3d/Results/cameraSpecs.json'
+    file_name = '../2dto3d/Results/cameraSpecs.json'
     cam_data = json.loads(open(file_name).read())
     return cam_data
 
